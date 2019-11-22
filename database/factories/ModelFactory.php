@@ -1,4 +1,8 @@
 <?php
+use Faker\Generator;
+use App\User;
+use App\Client;
+use App\Address;
 
 /*
 |--------------------------------------------------------------------------
@@ -11,9 +15,28 @@
 |
 */
 
-$factory->define(App\User::class, function (Faker\Generator $faker) {
+$factory->define(User::class, function (Generator $faker) {
     return [
-        'name' => $faker->name,
+        'name'  => $faker->name,
         'email' => $faker->email,
     ];
+});
+
+
+$factory->define(Client::class, function(Generator $faker) {
+    return [
+        'name'  => $faker->name,
+        'email' => $faker->email,
+        'phone' => $faker->phoneNumber
+    ];
+});
+
+$factory->define(Address::class, function(Generator $faker) {
+    return [
+        'address' => $faker->address,
+        'city'    => $faker->city,
+        'state'   => $faker->state,
+        'zipcode' => $faker->postcode
+    ];
+
 });
