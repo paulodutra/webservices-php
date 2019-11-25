@@ -45,6 +45,25 @@ class Handler extends ExceptionHandler
      */
     public function render($request, Exception $exception)
     {
+        //Array com tipos de exceções que deverão ser capturas e serializadas para json
+        $arrayException = [
+            HttpException::class,
+            ModelNotFoundException::class
+        ];
+
+        //Caso a classe de exceção esteja no array acima
+        if (in_array(get_class($exception), $arrayException)) {
+
+            $response = parent::render($request, $exception);
+
+            return response()->json([
+                'status_code' => $response->getStatusCode(),
+                'error_code'  => 5557,
+                'message'     => $exception->getMessage(),
+                'about_error' => 'algum link para a pagina de error_code'
+            ], $response->getStatusCode());
+        }
+
         return parent::render($request, $exception);
     }
 }
