@@ -12,7 +12,7 @@ class ClientController extends Controller
     public function index()
     {
         //Não precisa serializar porque o lumen por padrão já retorna em json
-        return Client::all();
+        return responseHelper(Client::all());
     }
 
     public function show($id)
@@ -24,7 +24,7 @@ class ClientController extends Controller
             throw new ModelNotFoundException("Cliente não existe");
         }
 
-        return $client;
+        return responseHelper()->make($client);
     }
 
     public function store(Request $request)
@@ -37,7 +37,7 @@ class ClientController extends Controller
         ]);
 
         $client = Client::create($request->all());
-        return response()->json($client, 201);
+        return responseHelper()->make($client, 201);
     }
 
     public function update(Request $request, $id)
@@ -60,7 +60,7 @@ class ClientController extends Controller
         //fill: serve para introduzir um array de dados
         $client->fill($request->all());
         $client->update();
-        return response()->json($client, 200);//ou retornar vazio e o status: 204
+        return responseHelper()->make($client, 200);//ou retornar vazio e o status: 204
 
     }
 
@@ -75,7 +75,7 @@ class ClientController extends Controller
         }
 
         $client->delete();
-        return response()->json("", 204);
+        return responseHelper()->make("", 204);
 
     }
 

@@ -25,14 +25,14 @@ class ResponseFactory extends Response
      * @param $status (status da requisição)
      * @return $result ou $this->json
      */
-    public function make(array $headers, $content = '', $status = 200)
+    public function make($content = '', $status = 200, array $headers = [])
     {
         //Acessa o container de serviço do lumen e obtem a request
         /** @var Request $request */
         $request = app('request');
         $acceptHeader = $request->header('accept');
 
-        if (! $acceptHeader) {
+        if ($acceptHeader == '*/*') {
             //mesma coisa de utilizar response()->json()
             return $this->json($content, $status, $headers);
         }
@@ -43,7 +43,9 @@ class ResponseFactory extends Response
                 $result = $this->json($content, $status, $headers);
                 break;
             case 'application/xml':
-                $result = $this->getXml($content);
+                //invoca o método da classe pai e passa os status e headers e o getXml gera
+                //o response em xml
+                $result = parent::make($this->getXml($content), $status, $headers);
                 break;
         }
 
