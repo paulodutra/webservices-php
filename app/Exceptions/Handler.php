@@ -46,9 +46,11 @@ class Handler extends ExceptionHandler
     public function render($request, Exception $exception)
     {
         //Array com tipos de exceções que deverão ser capturas e serializadas para json
+        //ValidationException::class: Erros de validações de dados
         $arrayException = [
             HttpException::class,
-            ModelNotFoundException::class
+            ModelNotFoundException::class,
+            ValidationException::class,
         ];
 
         //Caso a classe de exceção esteja no array acima
@@ -56,12 +58,19 @@ class Handler extends ExceptionHandler
 
             $response = parent::render($request, $exception);
 
-            return response()->json([
+            $arrayError = [
                 'status_code' => $response->getStatusCode(),
                 'error_code'  => 5557,
                 'message'     => $exception->getMessage(),
                 'about_error' => 'algum link para a pagina de error_code'
-            ], $response->getStatusCode());
+            ];
+
+            if ($exception instanceof ValidationException ) {
+                //obtem as mensagens de errors dos campos
+                $arrayError["fields"] = $exception->validator->getMessageBag()->toArray();
+            }
+
+            return responseHelper()->make($arrayError, $response->getStatusCode());
         }
 
         return parent::render($request, $exception);
