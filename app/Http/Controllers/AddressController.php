@@ -2,29 +2,47 @@
 
 namespace App\Http\Controllers;
 
+use App\Address;
 use App\Client;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
-class ClientController extends Controller
+class AddressController extends Controller
 {
 
-    public function index()
+    public function index($clientId)
     {
-        //Não precisa serializar porque o lumen por padrão já retorna em json
-        return responseHelper()->make(Client::all());
-    }
-
-    public function show($id)
-    {
-        $client = Client::find($id);
+        //verifica se o cliente existe
+        $client = Client::find($clientId);
 
         if (!$client) {
             //classe do lumen especifica para casos de 404, já retorna a resposta com esse status code
             throw new ModelNotFoundException("Cliente não existe");
         }
 
-        return responseHelper()->make($client);
+        //Não precisa serializar porque o lumen por padrão já retorna em json
+        return responseHelper()
+                ->make(Address::where('client_id',$clientId)->get());
+    }
+
+    public function show($id, $clientId)
+    {
+        $client = Client::find($clientId);
+
+        if (!$client) {
+            //classe do lumen especifica para casos de 404, já retorna a resposta com esse status code
+            throw new ModelNotFoundException("Cliente não existe");
+        }
+
+        $address = Address::find($id);
+
+        if (!$address) {
+            //classe do lumen especifica para casos de 404, já retorna a resposta com esse status code
+            throw new ModelNotFoundException("Endereço não existe");
+        }
+
+        $result = Address::where('client_id', $clientId)->where('id', $id)->get()->first();
+        return responseHelper()->make($result);
     }
 
     public function store(Request $request)

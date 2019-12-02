@@ -27,5 +27,17 @@ $router->group([
     $router->put('{id}', 'ClientController@update');
     $router->delete('{id}', 'ClientController@destroy');
 
+});
+
+$router->group([
+    'prefix' => 'api/clients/{client}/addresses',
+    //'namespace' => 'App\Http\Controllers'
+], function() use($router) {
+    //api/clients/id/addresses
+    $router->get('', 'AddressController@index');
+    $router->get('{id}', 'AddressController@show');
+    $router->post('', 'AddressController@store');
+    $router->put('{id}', 'AddressController@update');
+    $router->delete('{id}', 'AddressController@destroy');
 
 });
