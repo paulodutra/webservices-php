@@ -45,23 +45,9 @@ class AddressController extends Controller
         return responseHelper()->make($result);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, $clientId)
     {
-        //valida os dados e caso de erro retorna um 422 com a mensagem
-        $this->validate($request, [
-            'name'  => 'required',
-            'email' => 'required',
-            'phone' => 'required'
-        ]);
-
-        $client = Client::create($request->all());
-        return responseHelper()->make($client, 201);
-    }
-
-    public function update(Request $request, $id)
-    {
-
-        $client = Client::find($id);
+        $client = Client::find($clientId);
 
         if (!$client) {
             //classe do lumen especifica para casos de 404, já retorna a resposta com esse status code
@@ -70,29 +56,78 @@ class AddressController extends Controller
 
         //valida os dados e caso de erro retorna um 422 com a mensagem
         $this->validate($request, [
-            'name'  => 'required',
-            'email' => 'required',
-            'phone' => 'required'
+            'address'  => 'required',
+            'city' => 'required',
+            'state' => 'required',
+            'zipcode' => 'required'
         ]);
 
-        //fill: serve para introduzir um array de dados
-        $client->fill($request->all());
-        $client->update();
-        return responseHelper()->make($client, 200);//ou retornar vazio e o status: 204
-
+        $address = $client->addresses()->create($request->all());
+        return responseHelper()->make($address, 201);
     }
 
-
-    public function destroy($id)
+    public function update(Request $request, $id, $clientId)
     {
-        $client = Client::find($id);
+
+        $client = Client::find($clientId);
 
         if (!$client) {
             //classe do lumen especifica para casos de 404, já retorna a resposta com esse status code
             throw new ModelNotFoundException("Cliente não existe");
         }
 
-        $client->delete();
+        $address = Address::find($id);
+
+        if (!$address) {
+            //classe do lumen especifica para casos de 404, já retorna a resposta com esse status code
+            throw new ModelNotFoundException("Endereço não existe");
+        }
+
+         //valida os dados e caso de erro retorna um 422 com a mensagem
+         $this->validate($request, [
+            'address'  => 'required',
+            'city' => 'required',
+            'state' => 'required',
+            'zipcode' => 'required'
+        ]);
+
+        $result = Address::where('client_id', $clientId)->where('id', $id)->get()->first();
+
+        if (!$result) {
+            throw new ModelNotFoundException("Endereço não existe");
+        }
+
+        $result->fill($request->all());
+        $result->save();
+        return responseHelper()->make($result, 200);//ou retornar vazio e o status: 204
+
+    }
+
+
+    public function destroy($id, $clientId)
+    {
+        $client = Client::find($clientId);
+
+        if (!$client) {
+            //classe do lumen especifica para casos de 404, já retorna a resposta com esse status code
+            throw new ModelNotFoundException("Cliente não existe");
+        }
+
+        $address = Address::find($id);
+
+        if (!$address) {
+            //classe do lumen especifica para casos de 404, já retorna a resposta com esse status code
+            throw new ModelNotFoundException("Endereço não existe");
+        }
+
+        $result = Address::where('client_id', $clientId)->where('id', $id)->get()->first();
+
+        if (!$result) {
+            throw new ModelNotFoundException("Endereço não existe");
+        }
+
+
+        $result->delete();
         return responseHelper()->make("", 204);
 
     }
