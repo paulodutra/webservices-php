@@ -11,6 +11,8 @@
 |
 */
 
+use App\Soap\ClientSoapController;
+use App\Types\ClientType;
 use Zend\Soap\Client;
 use Zend\Soap\AutoDiscover;
 use Zend\Soap\Server;
@@ -71,7 +73,7 @@ $router->get('tcu', function() {
 });
 
 /**
- * SOAP SERVER
+ * SOAP SERVER COM REGISTRO DE FUNÇÃO
  */
 
 // Definição da descrição do WSDL - URL foi definida no vhost do apache
@@ -99,7 +101,7 @@ $router->post('server', function() use ($uri) {
 });
 
 /**
- * Métodos da chamada RPC - SOAP SERVER
+ * Funções da chamada RPC - SOAP SERVER
  */
 /**
  * @param int $num1
@@ -113,17 +115,73 @@ function soma($num1, $num2)
 
 
 /**
- * SOAP CLIENT
+ * SOAP CLIENT CHAMADA RPC para a função
  */
 
-$router->get('soap-teste', function() use ($uri) {
+$uriClient = "$uri/client";
+$router->get('soap-teste', function() use ($uriClient) {
     //faz uma requisição GET para obter o WSDL que foi definido acima
     //o autodiscovery sera executado e ira retornar o wsdl e disponibilizar o método RPC SOMA
-    $client = new Client("$uri/server-soap.wsdl", [
+    $client = new Client("$uriClient/server-soap.wsdl", [
         'cache_wsdl' => WSDL_CACHE_NONE
     ]);
 
     print_r($client->soma(2,5));
+
+
+});
+
+
+/**
+ * SOAP SERVER COM REGISTRO DE CLASSE
+ * E CLIENT
+ */
+
+
+
+$router->get('client/server-soap.wsdl', function () use ($uriClient) {
+    $autoDiscover = new AutoDiscover();
+    $autoDiscover->setUri("$uriClient/server");
+    $autoDiscover->setServiceName('SERVERSOAP');
+    $autoDiscover->setClass(ClientSoapController::class);
+    $autoDiscover->handle();
+});
+
+
+$router->post('client/server', function() use ($uriClient) {
+    $server = new Server("$uriClient/server-soap.wsdl", [
+        'cache_wsdl' => WSDL_CACHE_NONE
+    ]);
+
+    $server->setUri("$uriClient/server");
+    return $server
+        -> setReturnResponse(true)
+        ->setClass(ClientSoapController::class)
+        //->setObject() //passa o objeto com as dependências para o Server executar
+        ->handle(); //ira executar o envelope XML recebido
+});
+
+
+$router->get('soap-client', function() use ($uriClient) {
+    //faz uma requisição GET para obter o WSDL que foi definido acima
+    //o autodiscovery sera executado e ira retornar o wsdl e disponibilizar o método RPC SOMA
+    $client = new Client("$uriClient/server-soap.wsdl", [
+        'cache_wsdl' => WSDL_CACHE_NONE,
+        'soap_version'=> SOAP_1_1
+    ]);
+
+    //print_r($client->listAll());
+
+    /*$data = new ClientType();
+    $data->name = "Paulo Henrique";
+    $data->email = "email@email.com";
+    $data->phone = "9999";*/
+
+    print_r($client->create([
+        'name' => 'Paulo Henrique',
+        'email' => 'email@email.com',
+        'phone' => '9988'
+    ]));
 
 
 });
